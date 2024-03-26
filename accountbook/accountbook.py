@@ -1,10 +1,21 @@
+import reflex as rx
+from sqlmodel import create_engine
 
+from accountbook.logger import logger
 from accountbook.state import UserInputs, Balance
 
-import reflex as rx
+
+def create_history_table():
+    sqlite_filename = "accountbook.db"
+    sqlite_url = f"sqlite:///{sqlite_filename}"
+    engine = create_engine(sqlite_url, echo=True)
+    rx.Model.metadata.create_all(engine)
+    logger.info(f"successfully create database and table({sqlite_url})")
 
 
 def index() -> rx.Component:
+    # create table
+    create_history_table()
     return rx.vstack(
         rx.form(
             rx.vstack(
@@ -19,7 +30,7 @@ def index() -> rx.Component:
                 rx.button("제출", type="submit")
             ),
             on_submit=Balance.handle_submit,
-            reset_on_submit=True
+            reset_on_submit=False
         ),
         rx.divider(),
         rx.heading("가계부 현재 잔액"),

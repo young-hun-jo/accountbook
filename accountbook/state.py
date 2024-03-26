@@ -3,6 +3,8 @@ import reflex as rx
 from datetime import datetime
 from pytz import timezone
 
+from accountbook.logger import logger
+
 
 class UserInputs(rx.State):
     actions: list[str] = ["지출", "수입"]
@@ -65,17 +67,16 @@ class Balance(rx.State):
 
     def add_history_to_db(self, actions, years, months, categories, banks, price, reason):
         # db_url = "sqlite:///accountbook.db"
+        row = History(
+            actions=actions,
+            years=years,
+            months=months,
+            categories=categories,
+            banks=banks,
+            price=price,
+            reason=reason
+        )
         with rx.session() as session:
-            session.add(
-                History(
-                    actions=actions,
-                    years=years,
-                    months=months,
-                    categories=categories,
-                    banks=banks,
-                    price=price,
-                    reason=reason
-                )
-            )
+            session.add(row)
             session.commit()
-            print("finish inserting row to db")
+            logger.info(f"finish inserting row to db - ROW:{row.actions, row.years, row.months, row.categories, row.banks, row.price, row.reason, row.created_at}")
